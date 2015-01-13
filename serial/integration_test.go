@@ -17,6 +17,7 @@
 package serial
 
 import (
+	"crypto/rand"
 	"errors"
 	"io"
 	"os"
@@ -140,33 +141,32 @@ func TestLoopback(t *testing.T) {
 
 	defer circuit.Close()
 
-	b := []byte{0x00, 0x17, 0xFE, 0xFF}
-
-	n, err := circuit.Write(b)
+	randomCount := 100
+	randomBytes := make([]byte, randomCount)
+	_, err = rand.Read(randomBytes)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if n != 4 {
-		t.Fatal("Expected 4 bytes written, got ", n)
+	n, err := circuit.Write(randomBytes)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if n != randomCount {
+		t.Fatalf("Expected %d bytes written, got %d", randomCount, n)
 	}
 
 	// Check the response.
-	b, err = readWithTimeout(circuit, 4)
+	b, err := readWithTimeout(circuit, randomCount)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if b[0] != 0x00 {
-		t.Error("Expected 0x00, got ", b[0])
+	for i, value := range b {
+		if value != randomBytes[i]  {
+			t.Errorf("Expected 0x%x, got 0x%x", randomBytes[i], value)
+		}
 	}
-	if b[1] != 0x17 {
-		t.Error("Expected 0x17, got ", b[1])
-	}
-	if b[2] != 0xFE {
-		t.Error("Expected 0xFE, got ", b[2])
-	}
-	if b[3] != 0xFF {
-		t.Error("Expected 0xFF, got ", b[3])
-	}
+
 }
