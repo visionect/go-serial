@@ -19,14 +19,13 @@ package serial
 import (
 	"errors"
 	"io"
+	"os"
 )
 
 import "testing"
 import "time"
 
-const (
-	DEVICE = "/dev/tty.usbserial-A8008HlV"
-)
+var DEVICE string
 
 //////////////////////////////////////////////////////
 // Helpers
@@ -56,6 +55,17 @@ func readWithTimeout(r io.Reader, n int) ([]byte, error) {
 	}
 
 	return nil, errors.New("Can't get here.")
+}
+
+//////////////////////////////////////////////////////
+// Init
+//////////////////////////////////////////////////////
+
+func init() {
+	DEVICE = os.Getenv("SERIAL_PORT")
+	if DEVICE == "" {
+		DEVICE = "/dev/tty.usbserial-A8008HlV"
+	}
 }
 
 //////////////////////////////////////////////////////
@@ -112,5 +122,51 @@ func TestIncrementAndEcho(t *testing.T) {
 	}
 	if b[3] != 0x00 {
 		t.Error("Expected 0x00, got ", b[3])
+	}
+}
+
+func TestLoopback(t *testing.T) {
+	var options OpenOptions
+	options.PortName = DEVICE
+	options.BaudRate = 19200
+	options.DataBits = 8
+	options.StopBits = 1
+	options.MinimumReadSize = 4
+
+	circuit, err := Open(options)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer circuit.Close()
+
+	b := []byte{0x00, 0x17, 0xFE, 0xFF}
+
+	n, err := circuit.Write(b)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if n != 4 {
+		t.Fatal("Expected 4 bytes written, got ", n)
+	}
+
+	// Check the response.
+	b, err = readWithTimeout(circuit, 4)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if b[0] != 0x00 {
+		t.Error("Expected 0x00, got ", b[0])
+	}
+	if b[1] != 0x17 {
+		t.Error("Expected 0x17, got ", b[1])
+	}
+	if b[2] != 0xFE {
+		t.Error("Expected 0xFE, got ", b[2])
+	}
+	if b[3] != 0xFF {
+		t.Error("Expected 0xFF, got ", b[3])
 	}
 }
