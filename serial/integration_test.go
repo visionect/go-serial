@@ -170,3 +170,10 @@ func TestLoopback(t *testing.T) {
 	}
 
 }
+
+func TestList(t *testing.T) {
+	list := List()
+	for _, port := range list {
+		t.Logf("%v", port)
+	}
+}
