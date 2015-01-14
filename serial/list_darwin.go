@@ -1,9 +1,6 @@
 package serial
 
 import (
-    "io/ioutil"
-    "os"
-    "path"
     "path/filepath"
     )
 
