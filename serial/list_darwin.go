@@ -2,7 +2,7 @@ package serial
 
 import (
     "path/filepath"
-    )
+)
 
 func listInternal() []SerialPort {
     files, _ := filepath.Glob("/dev/tty.*")
