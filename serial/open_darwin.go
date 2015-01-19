@@ -133,8 +133,8 @@ func convertOptions(options OpenOptions) (*termios, error) {
 	result.c_cc[kVMIN] = cc_t(vmin)
 
 	// Set an arbitrary baudrate. We'll set the real one later.
-	result.c_ispeed = 14400
-	result.c_ospeed = 14400
+	result.c_ispeed = 9600
+	result.c_ospeed = 9600
 
 	// Data bits
 	switch options.DataBits {
