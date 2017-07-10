@@ -1,7 +1,7 @@
 This is a package that allows you to read from and write to serial ports in Go.
 
 
-OS support
+OS support 
 ==========
 
 Currently this package works only on OS X, Linux and Windows. It could probably be ported
